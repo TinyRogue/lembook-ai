@@ -1,17 +1,20 @@
+import logging
 import math
 import os
 import sys
 import certifi
 import gensim
-from decouple import config
+# from decouple import config
 from dotenv import load_dotenv
 from flask import Flask, request, abort, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 from waitress import serve
+
+from doc2vec import prepare_documents, get_model
 from utils import load_data
 
-PASS_KEY = config('PASS_KEY')
+PASS_KEY = os.getenv('PASS_KEY')
 DB_NAME = 'TheDB'
 BOOKS_COLLECTION_NAME = 'books'
 USERS_COLLECTION_NAME = 'users'
@@ -83,8 +86,11 @@ if __name__ == '__main__':
     print('Loading the data...')
     ids, documents = load_data(DATA_PATH)
     print('Loading the model...')
-    model = gensim.models.doc2vec.Doc2Vec.load(BASE_MODEL)
-
+    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+    docs = prepare_documents()
+    model = get_model()
+    model.build_vocab(docs)
+    model.train(docs, total_examples=model.corpus_count, epochs=model.epochs)
     print('Loading environment variables...')
     load_dotenv()
     mongo_pass = os.getenv('ATLAS_URI')
