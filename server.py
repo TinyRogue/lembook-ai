@@ -1,25 +1,24 @@
-import logging
 import math
 import os
 import sys
 import certifi
+import dropbox
 import gensim
-# from decouple import config
+from decouple import config
 from dotenv import load_dotenv
 from flask import Flask, request, abort, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 from waitress import serve
-
-from doc2vec import prepare_documents, get_model
 from utils import load_data
 
 PASS_KEY = os.getenv('PASS_KEY')
+DROP_BOX_PASS = os.getenv('DROP_BOX') or config('DROP_BOX')
 DB_NAME = 'TheDB'
 BOOKS_COLLECTION_NAME = 'books'
 USERS_COLLECTION_NAME = 'users'
 DATA_PATH = 'nanoDB.processed.json'
-BASE_MODEL = 'models/doc2vec.model4'
+BASE_MODEL = './doc2vec.model4'
 
 app = Flask(__name__)
 CORS(app)
@@ -85,12 +84,17 @@ def find_similar_books(user_uid):
 if __name__ == '__main__':
     print('Loading the data...')
     ids, documents = load_data(DATA_PATH)
+    print('Accessing dropbox...')
+    dbx = dropbox.Dropbox(DROP_BOX_PASS)
+    FILENAMES = ('doc2vec.model4', 'doc2vec.model4.dv.vectors.npy',
+                 'doc2vec.model4.wv.vectors.npy', 'doc2vec.model4.syn1neg.npy')
+
+    for filename in FILENAMES:
+        print(f'Downloading and saving {filename}')
+        dbx.files_download_to_file(f'{filename}', f'/{filename}')
+
     print('Loading the model...')
-    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-    docs = prepare_documents()
-    model = get_model()
-    model.build_vocab(docs)
-    model.train(docs, total_examples=model.corpus_count, epochs=model.epochs)
+    model = gensim.models.doc2vec.Doc2Vec.load(BASE_MODEL)
     print('Loading environment variables...')
     load_dotenv()
     mongo_pass = os.getenv('ATLAS_URI')
