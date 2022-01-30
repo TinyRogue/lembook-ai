@@ -1,0 +1,8 @@
+certifi~=2021.10.8
+gensim~=4.1.2
+python-dotenv~=0.19.2
+Flask~=2.0.2
+pymongo~=4.0.1
+waitress~=2.0.0
+contractions~=0.0.58
+nltk~=3.6.7
