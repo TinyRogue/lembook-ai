@@ -4,7 +4,7 @@ import gensim
 from utils import load_data
 
 DATA_PATH = 'nanoDB.processed.json'
-BASE_MODEL = 'models/doc2vec.model4'
+BASE_MODEL = 'models/doc2vec.newmodel1'
 
 
 def prepare_documents():
@@ -13,7 +13,7 @@ def prepare_documents():
 
 
 def get_model():
-    return gensim.models.doc2vec.Doc2Vec(vector_size=400, min_count=2, epochs=20, dm=1, dbow_words=1, dm_concat=1, window=7)
+    return gensim.models.doc2vec.Doc2Vec(vector_size=250, min_count=2, epochs=20, dm=1, dbow_words=1, dm_concat=1, window=7)
 
 
 if __name__ == '__main__':
